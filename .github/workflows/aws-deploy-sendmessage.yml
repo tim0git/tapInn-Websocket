@@ -15,11 +15,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Generate deployment package
-        run: zip -r deploy.zip *
-
       - name: Change directory, install dependencies, and zip
-        run: cd ./SendMessageFunction && npm install && zip -r deploy.zip .
+        run: cd ./SendMessageFunction && npm install && zip -r deploy.zip ./SendMessageFunction/*
 
       - name: Deploy to AWS Lambda
         uses: appleboy/lambda-action@master
