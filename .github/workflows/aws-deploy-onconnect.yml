@@ -1,0 +1,28 @@
+name: AWS Deploy onConnect
+
+on:
+  pull_request:
+    branches: [master]
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip *
+
+      - name: Change directory, install dependencies, and zip
+        run: cd ./onConnectFunction && npm install && zip -r deploy.zip .
+
+      - name: Deploy to AWS Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          function_name: serverlessrepo-ontap-websocket-OnConnectFunction-U9YR5QBOSLNL
+          zip_file: deploy.zip
