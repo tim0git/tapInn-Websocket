@@ -3,6 +3,8 @@ name: AWS Deploy onConnect
 on:
   pull_request:
     branches: [master]
+    paths:
+      - 'OnConnectFunction/*'
 
 jobs:
   deploy:
