@@ -1,10 +1,10 @@
-name: AWS Deploy onConnect
+name: AWS Deploy onDisconnect
 
 on:
   pull_request:
     branches: [master]
     paths:
-      - 'OnConnectFunction/*'
+      - 'OnDisconnectFunction/*'
 
 jobs:
   deploy:
@@ -19,7 +19,7 @@ jobs:
         run: zip -r deploy.zip *
 
       - name: Change directory, install dependencies, and zip
-        run: cd ./OnConnectFunction && npm install && zip -r deploy.zip .
+        run: cd ./OnDisconnectFunction && npm install && zip -r deploy.zip .
 
       - name: Deploy to AWS Lambda
         uses: appleboy/lambda-action@master
@@ -27,5 +27,5 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
-          function_name: ${{ secrets.AWS__LAMBDA_ONCONNECT }}
+          function_name: ${{ secrets.AWS__LAMBDA_ONDISCONNECT }}
           zip_file: deploy.zip
