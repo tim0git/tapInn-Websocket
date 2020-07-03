@@ -27,7 +27,7 @@ exports.handler = async event => {
   } catch (err) {
     return {
       statusCode: 500,
-      body: 'Failed to disconnect: ' + JSON.stringify(err)
+      body: `Failed to disconnect: ${JSON.stringify(err)}`
     };
   }
 

@@ -12,13 +12,12 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 
 exports.handler = async event => {
   const { venue_id } = event.queryStringParameters;
-  console.log(venue_id);
 
   const putParams = {
     TableName: process.env.TABLE_NAME,
     Item: {
       connectionId: event.requestContext.connectionId,
-      venue_id: venue_id
+      venue_id
     }
   };
 
@@ -27,7 +26,7 @@ exports.handler = async event => {
   } catch (err) {
     return {
       statusCode: 500,
-      body: 'Failed to connect: ' + JSON.stringify(err)
+      body: `Failed to connect: ${JSON.stringify(err)}`
     };
   }
 
