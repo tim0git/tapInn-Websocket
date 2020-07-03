@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "airbnb",
+    "prettier",
+    "plugin:node/recommended",
+    "plugin:security/recommended"
+  ],
+  "plugins": ["prettier", "node", "security"],
+  "rules": {
+    "camelcase": "off",
+    "security/detect-object-injection": "off",
+    "node/no-unpublished-require": ["off"]
+  }
+}
