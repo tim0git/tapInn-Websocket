@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Change directory, install dependencies, and zip
-        run: cd ./OnConnectFunction && npm install && zip -r deploy.zip ./OnConnectFunction/*
+        run: cd ./OnConnectFunction && npm install && zip -r deploy.zip .
 
       - name: Deploy to AWS Lambda
         uses: appleboy/lambda-action@master
