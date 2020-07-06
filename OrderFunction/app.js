@@ -13,7 +13,8 @@ exports.handler = async (event, context) => {
   // eslint-disable-next-line no-console
   console.log(context, 'this is the context');
 
-  const { awsRequestId, requestTimeEpoch } = context;
+  const { requestTimeEpoch } = event.requestContext;
+  const { awsRequestId } = context;
   const { venue_id, table_number, order_items } = JSON.parse(event.body);
 
   const putParams = {
