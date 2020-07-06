@@ -28,6 +28,9 @@ exports.handler = async (event, context) => {
     }
   };
 
+  // eslint-disable-next-line no-console
+  console.log(putParams);
+
   try {
     await ddb.put(putParams).promise();
   } catch (err) {
