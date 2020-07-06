@@ -13,24 +13,36 @@ exports.handler = async (event, context) => {
   // eslint-disable-next-line no-console
   console.log(context, 'this is the context');
 
-  const { order_id, order_status, venue_id, table_number } = JSON.parse(
-    event.body
-  );
+  const {
+    order_id,
+    order_time,
+    order_status,
+    venue_id,
+    table_number
+  } = JSON.parse(event.body);
 
   const updateParams = {
     TableName: TABLE_ORDERS,
-    keys: {
-      order_id
+    Key: {
+      order_id,
+      order_time
     },
     UpdateExpression: 'set order_status = :order_status',
     ExpressionAttributeValues: {
       ':order_status': order_status
-    }
+    },
+    ReturnValues: 'ALL_NEW'
   };
 
+  let updatedOrder;
+
   try {
-    await ddb.update(updateParams).promise();
+    updatedOrder = await ddb.update(updateParams).promise();
+    // eslint-disable-next-line no-console
+    console.log(updatedOrder, 'successfully updated DB');
   } catch (err) {
+    // eslint-disable-next-line no-console
+    console.log(err, 'failed update DB');
     return {
       statusCode: 500,
       body: `Failed to connect: ${JSON.stringify(err)}`
@@ -60,12 +72,15 @@ exports.handler = async (event, context) => {
     return { statusCode: 500, body: e.stack };
   }
 
+  // eslint-disable-next-line no-console
+  console.log(connectionData, 'Connection to send update status message');
+
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
   });
 
-  const postData = order_status;
+  const postData = JSON.stringify(updatedOrder.Attributes);
 
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
     try {
@@ -87,8 +102,12 @@ exports.handler = async (event, context) => {
   });
 
   try {
-    await Promise.all(postCalls);
+    const messageSuccess = await Promise.all(postCalls);
+    // eslint-disable-next-line no-console
+    console.log(messageSuccess, 'Message success');
   } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e, 'error sending message');
     return { statusCode: 500, body: e.stack };
   }
 
