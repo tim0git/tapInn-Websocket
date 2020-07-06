@@ -5,7 +5,7 @@ const ddb = new AWS.DynamoDB.DocumentClient({
   region: process.env.AWS_REGION
 });
 
-const { TABLE_NAME } = process.env;
+const { TABLE_CONNECTIONS, TABLE_ORDERS } = process.env;
 
 exports.handler = async (event, context) => {
   // eslint-disable-next-line no-console
@@ -13,23 +13,49 @@ exports.handler = async (event, context) => {
   // eslint-disable-next-line no-console
   console.log(context, 'this is the context');
 
-  const { venue_id } = JSON.parse(event.body);
+  const { awsRequestId, requestTimeEpoch } = context;
+  const { venue_id, table_number, order_items } = JSON.parse(event.body);
+
+  const putParams = {
+    TableName: TABLE_ORDERS,
+    Item: {
+      order_id: awsRequestId,
+      order_time: requestTimeEpoch,
+      venue_id,
+      table_number,
+      order_status: 'pending',
+      order_items
+    }
+  };
+
+  try {
+    await ddb.put(putParams).promise();
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: `Failed to connect: ${JSON.stringify(err)}`
+    };
+  }
+
   let connectionData;
 
   try {
-    const params = {
-      TableName: TABLE_NAME,
+    const scanParams = {
+      TableName: TABLE_CONNECTIONS,
       ProjectionExpression: 'connectionId',
-      FilterExpression: '#venue_id = :venue_id',
+      FilterExpression:
+        '#venue_id = :venue_id and #table_number = :table_number',
       ExpressionAttributeNames: {
-        '#venue_id': 'venue_id'
+        '#venue_id': 'venue_id',
+        '#table_number': 'table_number'
       },
       ExpressionAttributeValues: {
-        ':venue_id': venue_id
+        ':venue_id': venue_id,
+        ':table_number': 'dashboard'
       }
     };
 
-    connectionData = await ddb.scan(params).promise();
+    connectionData = await ddb.scan(scanParams).promise();
   } catch (e) {
     return { statusCode: 500, body: e.stack };
   }
@@ -39,7 +65,7 @@ exports.handler = async (event, context) => {
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
   });
 
-  const postData = JSON.parse(event.body).data;
+  const postData = putParams.Item;
 
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
     try {
@@ -52,7 +78,7 @@ exports.handler = async (event, context) => {
         // eslint-disable-next-line no-console
         console.log(`Found stale connection, deleting ${connectionId}`);
         await ddb
-          .delete({ TableName: TABLE_NAME, Key: { connectionId } })
+          .delete({ TableName: TABLE_CONNECTIONS, Key: { connectionId } })
           .promise();
       } else {
         throw e;
