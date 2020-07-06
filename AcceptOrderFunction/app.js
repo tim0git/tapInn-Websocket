@@ -30,13 +30,16 @@ exports.handler = async (event, context) => {
     UpdateExpression: 'set order_status = :order_status',
     ExpressionAttributeValues: {
       ':order_status': order_status
-    }
+    },
+    ReturnValues: 'ALL_NEW'
   };
 
+  let updatedOrder;
+
   try {
-    const insert = await ddb.update(updateParams).promise();
+    updatedOrder = await ddb.update(updateParams).promise();
     // eslint-disable-next-line no-console
-    console.log(insert, 'successfully updated DB');
+    console.log(updatedOrder, 'successfully updated DB');
   } catch (err) {
     // eslint-disable-next-line no-console
     console.log(err, 'failed update DB');
@@ -77,7 +80,7 @@ exports.handler = async (event, context) => {
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
   });
 
-  const postData = order_status;
+  const postData = JSON.stringify(updatedOrder);
 
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
     try {
