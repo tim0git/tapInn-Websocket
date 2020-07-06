@@ -29,9 +29,6 @@ exports.handler = async (event, context) => {
     }
   };
 
-  // eslint-disable-next-line no-console
-  console.log(putParams);
-
   try {
     await ddb.put(putParams).promise();
   } catch (err) {
@@ -63,6 +60,9 @@ exports.handler = async (event, context) => {
   } catch (e) {
     return { statusCode: 500, body: e.stack };
   }
+
+  // eslint-disable-next-line no-console
+  console.log(connectionData);
 
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
