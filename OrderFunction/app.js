@@ -1,11 +1,3 @@
-// save the order to dynamo db
-// - venue_id
-// - table_number
-// - order_status - pending / accepted or declined / complete
-// - order_items: [object]
-
-// send a message to the dashboard with the order
-
 const AWS = require('aws-sdk');
 
 const ddb = new AWS.DynamoDB.DocumentClient({
@@ -21,15 +13,17 @@ exports.handler = async (event, context) => {
   // eslint-disable-next-line no-console
   console.log(context, 'this is the context');
 
-  const { awsRequestId } = context;
+  const { awsRequestId, requestTimeEpoch } = context;
   const { venue_id, table_number, order_items } = JSON.parse(event.body);
 
   const putParams = {
     TableName: TABLE_ORDERS,
     Item: {
       order_id: awsRequestId,
+      order_time: requestTimeEpoch,
       venue_id,
       table_number,
+      order_status: 'pending',
       order_items
     }
   };
@@ -43,57 +37,60 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // let connectionData;
+  let connectionData;
 
-  // try {
-  //   const params = {
-  //     TableName: TABLE_NAME,
-  //     ProjectionExpression: 'connectionId',
-  //     FilterExpression: '#venue_id = :venue_id',
-  //     ExpressionAttributeNames: {
-  //       '#venue_id': 'venue_id'
-  //     },
-  //     ExpressionAttributeValues: {
-  //       ':venue_id': venue_id
-  //     }
-  //   };
+  try {
+    const scanParams = {
+      TableName: TABLE_CONNECTIONS,
+      ProjectionExpression: 'connectionId',
+      FilterExpression:
+        '#venue_id = :venue_id and #table_number = :table_number',
+      ExpressionAttributeNames: {
+        '#venue_id': 'venue_id',
+        '#table_number': 'table_number'
+      },
+      ExpressionAttributeValues: {
+        ':venue_id': venue_id,
+        ':table_number': 'dashboard'
+      }
+    };
 
-  //   connectionData = await ddb.scan(params).promise();
-  // } catch (e) {
-  //   return { statusCode: 500, body: e.stack };
-  // }
+    connectionData = await ddb.scan(scanParams).promise();
+  } catch (e) {
+    return { statusCode: 500, body: e.stack };
+  }
 
-  // const apigwManagementApi = new AWS.ApiGatewayManagementApi({
-  //   apiVersion: '2018-11-29',
-  //   endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
-  // });
+  const apigwManagementApi = new AWS.ApiGatewayManagementApi({
+    apiVersion: '2018-11-29',
+    endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
+  });
 
-  // const postData = JSON.parse(event.body).data;
+  const postData = putParams.Item;
 
-  // const postCalls = connectionData.Items.map(async ({ connectionId }) => {
-  //   try {
-  //     // conditional that only sends to the existing user..
-  //     await apigwManagementApi
-  //       .postToConnection({ ConnectionId: connectionId, Data: postData })
-  //       .promise();
-  //   } catch (e) {
-  //     if (e.statusCode === 410) {
-  //       // eslint-disable-next-line no-console
-  //       console.log(`Found stale connection, deleting ${connectionId}`);
-  //       await ddb
-  //         .delete({ TableName: TABLE_NAME, Key: { connectionId } })
-  //         .promise();
-  //     } else {
-  //       throw e;
-  //     }
-  //   }
-  // });
+  const postCalls = connectionData.Items.map(async ({ connectionId }) => {
+    try {
+      // conditional that only sends to the existing user..
+      await apigwManagementApi
+        .postToConnection({ ConnectionId: connectionId, Data: postData })
+        .promise();
+    } catch (e) {
+      if (e.statusCode === 410) {
+        // eslint-disable-next-line no-console
+        console.log(`Found stale connection, deleting ${connectionId}`);
+        await ddb
+          .delete({ TableName: TABLE_CONNECTIONS, Key: { connectionId } })
+          .promise();
+      } else {
+        throw e;
+      }
+    }
+  });
 
-  // try {
-  //   await Promise.all(postCalls);
-  // } catch (e) {
-  //   return { statusCode: 500, body: e.stack };
-  // }
+  try {
+    await Promise.all(postCalls);
+  } catch (e) {
+    return { statusCode: 500, body: e.stack };
+  }
 
-  // return { statusCode: 200, body: 'Data sent.' };
+  return { statusCode: 200, body: 'Data sent.' };
 };
