@@ -28,6 +28,8 @@ exports.handler = async (event, context) => {
     }
   };
 
+  console.log(putParams);
+
   try {
     await ddb.put(putParams).promise();
   } catch (err) {
