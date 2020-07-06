@@ -29,8 +29,12 @@ exports.handler = async (event, context) => {
   };
 
   try {
-    await ddb.update(updateParams).promise();
+    const insert = await ddb.update(updateParams).promise();
+    // eslint-disable-next-line no-console
+    console.log(insert, 'successfully updated DB');
   } catch (err) {
+    // eslint-disable-next-line no-console
+    console.log(err, 'failed update DB');
     return {
       statusCode: 500,
       body: `Failed to connect: ${JSON.stringify(err)}`
@@ -60,6 +64,9 @@ exports.handler = async (event, context) => {
     return { statusCode: 500, body: e.stack };
   }
 
+  // eslint-disable-next-line no-console
+  console.log(connectionData, 'Connection to send update status message');
+
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
@@ -87,8 +94,12 @@ exports.handler = async (event, context) => {
   });
 
   try {
-    await Promise.all(postCalls);
+    const messageSuccess = await Promise.all(postCalls);
+    // eslint-disable-next-line no-console
+    console.log(messageSuccess, 'Message success');
   } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e, 'error sending message');
     return { statusCode: 500, body: e.stack };
   }
 
