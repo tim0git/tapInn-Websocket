@@ -71,6 +71,9 @@ exports.handler = async (event, context) => {
 
   const postData = putParams.Item;
 
+  // eslint-disable-next-line no-console
+  console.log(postData);
+
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
     try {
       // conditional that only sends to the existing user..
