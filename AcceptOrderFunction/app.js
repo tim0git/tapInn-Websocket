@@ -19,7 +19,7 @@ exports.handler = async (event, context) => {
 
   const updateParams = {
     TableName: TABLE_ORDERS,
-    keys: {
+    key: {
       order_id
     },
     UpdateExpression: 'set order_status = :order_status',
