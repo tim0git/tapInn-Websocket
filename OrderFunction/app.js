@@ -61,18 +61,12 @@ exports.handler = async (event, context) => {
     return { statusCode: 500, body: e.stack };
   }
 
-  // eslint-disable-next-line no-console
-  console.log(connectionData);
-
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
   });
 
   const postData = putParams.Item;
-
-  // eslint-disable-next-line no-console
-  console.log(postData);
 
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
     try {
@@ -92,6 +86,9 @@ exports.handler = async (event, context) => {
       }
     }
   });
+
+  // eslint-disable-next-line no-console
+  console.log(postCalls);
 
   try {
     await Promise.all(postCalls);
