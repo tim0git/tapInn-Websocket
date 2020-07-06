@@ -13,14 +13,19 @@ exports.handler = async (event, context) => {
   // eslint-disable-next-line no-console
   console.log(context, 'this is the context');
 
-  const { order_id, order_status, venue_id, table_number } = JSON.parse(
-    event.body
-  );
+  const {
+    order_id,
+    order_time,
+    order_status,
+    venue_id,
+    table_number
+  } = JSON.parse(event.body);
 
   const updateParams = {
     TableName: TABLE_ORDERS,
     Key: {
-      order_id
+      order_id,
+      order_time
     },
     UpdateExpression: 'set order_status = :order_status',
     ExpressionAttributeValues: {
