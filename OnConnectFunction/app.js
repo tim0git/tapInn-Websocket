@@ -6,13 +6,14 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 });
 
 exports.handler = async event => {
-  const { venue_id } = event.queryStringParameters;
+  const { venue_id, table_number } = event.queryStringParameters;
 
   const putParams = {
     TableName: process.env.TABLE_NAME,
     Item: {
       connectionId: event.requestContext.connectionId,
-      venue_id
+      venue_id,
+      table_number
     }
   };
 
