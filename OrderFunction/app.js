@@ -66,7 +66,7 @@ exports.handler = async (event, context) => {
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
   });
 
-  const postData = putParams.Item;
+  const postData = JSON.stringify(putParams.Item);
 
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
     try {
