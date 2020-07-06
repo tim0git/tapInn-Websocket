@@ -80,7 +80,7 @@ exports.handler = async (event, context) => {
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
   });
 
-  const postData = JSON.stringify(updatedOrder);
+  const postData = JSON.stringify(updatedOrder.Attributes);
 
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
     try {
