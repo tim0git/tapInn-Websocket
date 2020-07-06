@@ -87,11 +87,10 @@ exports.handler = async (event, context) => {
     }
   });
 
-  // eslint-disable-next-line no-console
-  console.log(postCalls);
-
   try {
-    await Promise.all(postCalls);
+    const [messageSent] = await Promise.all(postCalls);
+    // eslint-disable-next-line no-console
+    console.log(messageSent);
   } catch (e) {
     return { statusCode: 500, body: e.stack };
   }
