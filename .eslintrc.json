@@ -8,6 +8,7 @@
   "plugins": ["prettier", "node", "security"],
   "rules": {
     "camelcase": "off",
+    "no-console": "off",
     "security/detect-object-injection": "off",
     "node/no-unpublished-require": ["off"]
   }
