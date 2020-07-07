@@ -16,6 +16,9 @@ exports.handler = async (event, context) => {
   const { venue_id, table_number } = event.queryStringParameters;
   const { connectionId } = event.requestContext;
 
+  // eslint-disable-next-line no-console
+  console.log(venue_id, table_number, connectionId, 'variables');
+
   const putParams = {
     TableName: TABLE_CONNECTIONS,
     Item: {
