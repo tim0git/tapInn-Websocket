@@ -8,10 +8,8 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 const { TABLE_CONNECTIONS, TABLE_ORDERS } = process.env;
 
 exports.handler = async (event, context) => {
-  // eslint-disable-next-line no-console
-  console.log(event, 'this is the event');
-  // eslint-disable-next-line no-console
-  console.log(context, 'this is the context');
+  console.log('Event:', event);
+  console.log('Context:', context);
 
   const {
     order_id,
@@ -20,6 +18,9 @@ exports.handler = async (event, context) => {
     venue_id,
     table_number
   } = JSON.parse(event.body);
+  const { domainName, stage } = event.requestContext;
+
+  // update order_status in DB
 
   const updateParams = {
     TableName: TABLE_ORDERS,
@@ -38,78 +39,69 @@ exports.handler = async (event, context) => {
 
   try {
     updatedOrder = await ddb.update(updateParams).promise();
-    // eslint-disable-next-line no-console
-    console.log(updatedOrder, 'successfully updated DB');
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log(err, 'failed update DB');
+    console.log('Update order_status success:', updatedOrder);
+  } catch (error) {
+    console.log('Update order_status failure:', error);
+
     return {
       statusCode: 500,
-      body: `Failed to connect: ${JSON.stringify(err)}`
+      body: `Failed to connect: ${JSON.stringify(error)}`
     };
   }
 
-  let connectionData;
+  // scan connectionId from DB
+
+  const scanParams = {
+    TableName: TABLE_CONNECTIONS,
+    ProjectionExpression: 'connectionId',
+    FilterExpression: '#venue_id = :venue_id and #table_number = :table_number',
+    ExpressionAttributeNames: {
+      '#venue_id': 'venue_id',
+      '#table_number': 'table_number'
+    },
+    ExpressionAttributeValues: {
+      ':venue_id': venue_id,
+      ':table_number': table_number
+    }
+  };
+
+  let connectionId;
 
   try {
-    const params = {
-      TableName: TABLE_CONNECTIONS,
-      ProjectionExpression: 'connectionId',
-      FilterExpression:
-        '#venue_id = :venue_id and #table_number = :table_number',
-      ExpressionAttributeNames: {
-        '#venue_id': 'venue_id',
-        '#table_number': 'table_number'
-      },
-      ExpressionAttributeValues: {
-        ':venue_id': venue_id,
-        ':table_number': table_number
-      }
-    };
-
-    connectionData = await ddb.scan(params).promise();
-  } catch (e) {
-    return { statusCode: 500, body: e.stack };
+    const data = await ddb.scan(scanParams).promise();
+    connectionId = data.Items[0].connectionId;
+    console.log('Scan connectionId success:', connectionId);
+  } catch (error) {
+    console.log('Scan connectionId failure:', error);
+    return { statusCode: 500, body: error.stack };
   }
 
-  // eslint-disable-next-line no-console
-  console.log(connectionData, 'Connection to send update status message');
+  // send message to connectionId
 
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
-    endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
+    endpoint: `${domainName}/${stage}`
   });
 
   const postData = JSON.stringify(updatedOrder.Attributes);
 
-  const postCalls = connectionData.Items.map(async ({ connectionId }) => {
-    try {
-      // conditional that only sends to the existing user..
-      await apigwManagementApi
-        .postToConnection({ ConnectionId: connectionId, Data: postData })
-        .promise();
-    } catch (e) {
-      if (e.statusCode === 410) {
-        // eslint-disable-next-line no-console
-        console.log(`Found stale connection, deleting ${connectionId}`);
-        await ddb
-          .delete({ TableName: TABLE_CONNECTIONS, Key: { connectionId } })
-          .promise();
-      } else {
-        throw e;
-      }
-    }
-  });
-
   try {
-    const messageSuccess = await Promise.all(postCalls);
-    // eslint-disable-next-line no-console
-    console.log(messageSuccess, 'Message success');
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e, 'error sending message');
-    return { statusCode: 500, body: e.stack };
+    await apigwManagementApi
+      .postToConnection({ ConnectionId: connectionId, Data: postData })
+      .promise();
+
+    console.log('Post message success:', `${connectionId} - ${postData}`);
+  } catch (error) {
+    console.log('Post message failure:', error);
+
+    if (error.statusCode === 410) {
+      await ddb
+        .delete({ TableName: TABLE_CONNECTIONS, Key: { connectionId } })
+        .promise();
+    } else {
+      return { statusCode: 500, body: error.stack };
+    }
   }
 
-  return { statusCode: 200, body: 'Data sent.' };
+  return { statusCode: 200, body: 'Order accepted.' };
 };
