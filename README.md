@@ -2,7 +2,7 @@
 
 ## Routes
 
-**\$connect:**
+**\$connect**
 
 Connection string:
 
@@ -16,7 +16,7 @@ Dashboard example:
 
 `wss://supersecretcode.execute-api.eu-west-1.amazonaws.com/Test?venue_id=1&table_number=dashboard`
 
-**openorders:**
+**openorders**
 
 Request:
 
@@ -49,7 +49,7 @@ Response to dashboard:
 }
 ```
 
-**order:**
+**order**
 
 Request from customer:
 
@@ -75,7 +75,7 @@ Response to dashboard:
 }
 ```
 
-**acceptorder:**
+**acceptorder**
 
 The `order_status` can accept any `<string>`, however we should keep to _accepted_ or _rejected_.
 
@@ -105,7 +105,7 @@ Response to customer:
 }
 ```
 
-**completeorder:**
+**completeorder**
 
 The `order_status` can accept any `<string>`, however we should keep to _completed_.
 
