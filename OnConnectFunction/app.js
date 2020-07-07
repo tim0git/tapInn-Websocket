@@ -8,10 +8,8 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 const { TABLE_CONNECTIONS } = process.env;
 
 exports.handler = async (event, context) => {
-  // eslint-disable-next-line no-console
-  console.log(event, 'this is the event');
-  // eslint-disable-next-line no-console
-  console.log(context, 'this is the context');
+  console.log('Event:', event);
+  console.log('Context:', context);
 
   const { venue_id, table_number } = event.queryStringParameters;
   const { connectionId } = event.requestContext;
@@ -27,12 +25,14 @@ exports.handler = async (event, context) => {
 
   try {
     await ddb.put(putParams).promise();
-  } catch (err) {
+    console.log('Update connectionId success:', connectionId);
+  } catch (error) {
+    console.log('Update connectionId failure:', error);
     return {
       statusCode: 500,
-      body: `Failed to connect: ${JSON.stringify(err)}`
+      body: `Failed to connect: ${JSON.stringify(error)}`
     };
   }
 
-  return { statusCode: 200, body: 'Connected.' };
+  return { statusCode: 200, body: 'Order complete.' };
 };

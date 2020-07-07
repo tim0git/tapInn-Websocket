@@ -8,54 +8,55 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 const { TABLE_ORDERS } = process.env;
 
 exports.handler = async (event, context) => {
-  // eslint-disable-next-line no-console
-  console.log(event, 'this is the event');
-  // eslint-disable-next-line no-console
-  console.log(context, 'this is the context');
+  console.log('Event:', event);
+  console.log('Context:', context);
 
   const { venue_id } = JSON.parse(event.body);
-  const { connectionId } = event.requestContext;
+  const { connectionId, domainName, stage } = event.requestContext;
+
+  // scan open orders from DB
+
+  const scanParams = {
+    TableName: TABLE_ORDERS,
+    FilterExpression:
+      '(#order_status = :order_accepted OR #order_status = :order_pending) AND #venue_id = :venue_id',
+    ExpressionAttributeNames: {
+      '#order_status': 'order_status',
+      '#venue_id': 'venue_id'
+    },
+    ExpressionAttributeValues: {
+      ':order_accepted': 'accepted',
+      ':order_pending': 'pending',
+      ':venue_id': venue_id
+    }
+  };
 
   let openOrders;
 
   try {
-    const scanParams = {
-      TableName: TABLE_ORDERS,
-      FilterExpression:
-        '(#order_status = :order_accepted OR #order_status = :order_pending) AND #venue_id = :venue_id',
-      ExpressionAttributeNames: {
-        '#order_status': 'order_status',
-        '#venue_id': 'venue_id'
-      },
-      ExpressionAttributeValues: {
-        ':order_accepted': 'completed',
-        ':order_pending': 'pending',
-        ':venue_id': venue_id
-      }
-    };
-
     openOrders = await ddb.scan(scanParams).promise();
-    // eslint-disable-next-line no-console
-    console.log(openOrders, 'Open orders');
+    console.log('Scan open orders success:', openOrders);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error, 'Error reading open orders');
+    console.log('Scan open orders failure:', error);
   }
+
+  // send message to connectionId
 
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
-    endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
+    endpoint: `${domainName}/${stage}`
   });
 
-  const postData = JSON.stringify(openOrders.Items);
+  const postData = JSON.stringify({ openOrders: openOrders.Items });
 
   try {
     await apigwManagementApi
       .postToConnection({ ConnectionId: connectionId, Data: postData })
       .promise();
+
+    console.log('Post message success:', `${connectionId} - ${postData}`);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error, 'error sending message');
+    console.log('Post message failure:', error);
     return { statusCode: 500, body: error.stack };
   }
 
