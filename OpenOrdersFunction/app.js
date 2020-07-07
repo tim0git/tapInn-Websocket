@@ -22,7 +22,7 @@ exports.handler = async (event, context) => {
     const scanParams = {
       TableName: TABLE_ORDERS,
       FilterExpression:
-        '#order_status = :order_accepted AND #order_status = :order_pending AND #venue_id = :venue_id',
+        '(#order_status = :order_accepted OR #order_status = :order_pending) AND #venue_id = :venue_id',
       ExpressionAttributeNames: {
         '#order_status': 'order_status',
         '#venue_id': 'venue_id'
