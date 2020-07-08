@@ -18,7 +18,7 @@ Dashboard example:
 
 **openorders**
 
-Request:
+Request from dashboard:
 
 ```json
 { "action": "openorders", "venue_id": "1" }
