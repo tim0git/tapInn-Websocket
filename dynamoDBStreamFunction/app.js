@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
         const response = await axios.get(
           'Ontap-env.eba-rsfhkrz6.eu-west-1.elasticbeanstalk.com/api/products?venue_id=1'
         );
-
+        // log to send to aws..
         console.log(response.data);
         // write order to table
         // If write is sucessful delete order from Dynamo DB
