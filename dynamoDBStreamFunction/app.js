@@ -43,6 +43,19 @@ exports.handler = async (event, context) => {
         // order_items
         // order_price
         // knex('order_history').insert(orders);
+
+        // const deleteParams = {
+//     TableName:TABLE_ORDERS,
+//     Key:{
+      // order_id,
+      // order_time
+    // },
+//     ConditionExpression:"order_id <= :order_id",
+//     ExpressionAttributeValues: {
+//         ":order_id": order_id
+//     }
+// };
+        // ddb.delete(deleteParams)
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
