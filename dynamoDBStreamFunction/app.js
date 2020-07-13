@@ -25,15 +25,18 @@ exports.handler = async (event, context) => {
   for (const record of event.Records) {
     console.log('Record:', record);
 
+    console.log('Order status:', record.dynamodb.NewImage.order_status.S)
     if (
       record.dynamodb.NewImage.order_status.S === 'completed' ||
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
+        console.log('inside the if statement');
         const response = await axios.get(
           'Ontap-env.eba-rsfhkrz6.eu-west-1.elasticbeanstalk.com/api/products?venue_id=1'
         );
         // log to send to aws..
+        console.log(response)
         console.log(response.data);
         // write order to table
         // If write is sucessful delete order from Dynamo DB
