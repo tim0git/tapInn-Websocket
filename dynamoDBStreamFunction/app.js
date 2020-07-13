@@ -23,11 +23,11 @@ exports.handler = async (event, context) => {
   console.log('Context:', context);
 
   for (const record of event.Records) {
-    console.log(record);
+    console.log('Record:', record);
 
     if (
-      record.NewImage.order_status.S === 'completed' ||
-      record.NewImage.order_status.S === 'rejected'
+      record.dynamodb.NewImage.order_status.S === 'completed' ||
+      record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
         const response = await axios.get(
