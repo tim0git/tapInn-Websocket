@@ -1,0 +1,14 @@
+{
+  "name": "dynamoDB-Stream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "author": "SAM CLI",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.690.0",
+    "axios": "^0.19.2",
+    "knex": "^0.21.2",
+    "pg": "^8.3.0"
+  }
+}
