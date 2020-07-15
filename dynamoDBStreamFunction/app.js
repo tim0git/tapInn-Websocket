@@ -30,9 +30,6 @@ exports.handler = async (event, context) => {
   console.log('Event:', event);
   console.log('Context:', context);
 
-  const search = await knex('trace').select('*');
-  console.log('Dubious Search', search);
-
   for (const record of event.Records) {
     console.log('Record:', record);
 
@@ -42,21 +39,47 @@ exports.handler = async (event, context) => {
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
-        console.log('inside the if statement');
-        // const response = await axios.get(
-        //   'Ontap-env.eba-rsfhkrz6.eu-west-1.elasticbeanstalk.com/api/products?venue_id=1'
-        // );
-        // log to send to aws..
-        console.log(response);
-        console.log(response.data);
-        // write order to table
+        const venue_id = record.dynamodb.NewImage.venue_id.S;
+        console.log('venue_id', venue_id);
+
+        const order_items = record.dynamodb.NewImage.order_items.S;
+        console.log('order_items:', order_items);
+
+        const order_time = record.dynamodb.NewImage.order_time.S;
+        console.log('order_time:', order_time);
+
+        const order_status = record.dynamodb.NewImage.order_status.S;
+        console.log('order_status:', order_status);
+
+        const table_number = record.dynamodb.NewImage.table_number.S;
+        console.log('table_number:', table_number);
+
+        const menu = await knex('products').select('*').where({ venue_id });
+        console.log('Menu:', menu);
+
+        // connect to SQL Menu and retrieve by venue_id
+
+        // match up order_items with the menu to create an []?
+
+        // **write order to table**
         // If write is sucessful delete order from Dynamo DB
-        // venue_id
-        // order_time
-        // order_status
-        // order_items
+        // venue_id xx
+        // order_time xx
+        // order_status xx
+        // order_items xx
         // order_price
         // knex('order_history').insert(orders);
+
+        // NewImage: {
+        //   order_status: [Object], xx
+        //   table_number: [Object],
+        //   order_time: [Object], xx
+        //   order_id: [Object],
+        //   venue_id: [Object], xx
+        //   order_items: [Object] xx
+        // },
+
+        console.log('inside the if statement');
 
         // const deleteParams = {
         //     TableName:TABLE_ORDERS,
@@ -77,8 +100,3 @@ exports.handler = async (event, context) => {
   }
   return `Successfully processed ${event.Records.length} records.`;
 };
-
-// loop through reocrds
-// if record.status === completed or rejected
-// insert in Postgres
-// delete from dynamoDB
