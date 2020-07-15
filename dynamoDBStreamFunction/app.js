@@ -1,5 +1,11 @@
 const AWS = require('aws-sdk');
 const axios = require('axios');
+const {
+  createLookUpObj,
+  calculateTotal,
+  countBasket,
+  recreateBasket
+} = require('./Dashboard.utils');
 
 const {
   TABLE_ORDERS,
@@ -44,8 +50,9 @@ exports.handler = async (event, context) => {
 
         const order_items = record.dynamodb.NewImage.order_items.S;
         console.log('order_items:', order_items);
+        //{"79":3,"80":2}
 
-        const order_time = record.dynamodb.NewImage.order_time.S;
+        const order_time = record.dynamodb.NewImage.order_time.N;
         console.log('order_time:', order_time);
 
         const order_status = record.dynamodb.NewImage.order_status.S;
@@ -56,6 +63,18 @@ exports.handler = async (event, context) => {
 
         const menu = await knex('products').select('*').where({ venue_id });
         console.log('Menu:', menu);
+
+        const lookup = createLookUpObj(menu, 'product_id');
+        console.log(lookup);
+
+        const total = calculateTotal(order_items, lookup);
+        console.log(total);
+
+        const count = countBasket(order_items);
+        console.log(count);
+
+        const stringBasket = recreateBasket(order_items, lookup);
+        console.log(stringBasket);
 
         // connect to SQL Menu and retrieve by venue_id
 
