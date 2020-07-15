@@ -21,10 +21,6 @@ const knex = require('knex')({
   }
 });
 
-console.log('Knex:', knex);
-console.log('keys', Object.keys(knex));
-console.log('entries', Object.entries(knex));
-
 const ddb = new AWS.DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
   region: process.env.AWS_REGION
@@ -33,6 +29,9 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 exports.handler = async (event, context) => {
   console.log('Event:', event);
   console.log('Context:', context);
+
+  const search = await knex('trace').select('*');
+  console.log('Dubious Search', search);
 
   for (const record of event.Records) {
     console.log('Record:', record);
@@ -44,9 +43,9 @@ exports.handler = async (event, context) => {
     ) {
       try {
         console.log('inside the if statement');
-        const response = await axios.get(
-          'Ontap-env.eba-rsfhkrz6.eu-west-1.elasticbeanstalk.com/api/products?venue_id=1'
-        );
+        // const response = await axios.get(
+        //   'Ontap-env.eba-rsfhkrz6.eu-west-1.elasticbeanstalk.com/api/products?venue_id=1'
+        // );
         // log to send to aws..
         console.log(response);
         console.log(response.data);
