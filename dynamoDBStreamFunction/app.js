@@ -76,6 +76,11 @@ exports.handler = async (event, context) => {
         const stringBasket = recreateBasket(order_items, lookup);
         console.log(stringBasket);
 
+        const orderToStore = {
+          venue_id,
+          order_time,
+                };
+
         // connect to SQL Menu and retrieve by venue_id
 
         // match up order_items with the menu to create an []?
