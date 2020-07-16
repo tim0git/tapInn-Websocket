@@ -99,7 +99,7 @@ exports.handler = async (event, context) => {
           }
         });
 
-        c
+        // const deleteOrder = await ddb.delete(deleteParams).promise();
 
         console.log('Delete order success:', deleteOrder);
       } catch (error) {
