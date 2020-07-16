@@ -77,12 +77,12 @@ exports.handler = async (event, context) => {
         const deleteParams = {
           TableName: TABLE_ORDERS,
           Key: {
-            order_id,
-            order_time
+            order_id: record.dynamodb.NewImage.order_id.S,
+            order_time: record.dynamodb.NewImage.order_time.N
           },
           ConditionExpression: 'order_id = :order_id',
           ExpressionAttributeValues: {
-            ':order_id': order_id
+            ':order_id': record.dynamodb.NewImage.order_id.S
           }
         };
         const hope = await ddb.delete(deleteParams);
