@@ -74,6 +74,8 @@ exports.handler = async (event, context) => {
         const postgresAction = await knex('order_history').insert(orderToStore);
         console.log('PostgreSQL action:', postgresAction);
 
+        const order_id = record.dynamodb.NewImage.order_id.S;
+
         const deleteParams = {
           TableName: TABLE_ORDERS,
           Key: {
