@@ -40,7 +40,6 @@ exports.handler = async (event, context) => {
   for (const record of event.Records) {
     console.log('Record:', record);
 
-    console.log('Order status:', record.dynamodb.NewImage.order_status.S);
     if (
       record.dynamodb.NewImage.order_status.S === 'completed' ||
       record.dynamodb.NewImage.order_status.S === 'rejected'
@@ -71,6 +70,8 @@ exports.handler = async (event, context) => {
           item_count
         };
 
+        console.log('Order to store:', orderToStore)
+
         const postgresAction = await knex('order_history').insert(orderToStore);
         console.log('PostgreSQL action:', postgresAction);
 
@@ -85,8 +86,9 @@ exports.handler = async (event, context) => {
             ':order_id': record.dynamodb.NewImage.order_id.S
           }
         };
-        const hope = await ddb.delete(deleteParams).promise();
-        console.log(hope);
+
+        await ddb.delete(deleteParams).promise();
+        console.log('Update Postgres success');
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
