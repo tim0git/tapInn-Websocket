@@ -72,14 +72,14 @@ exports.handler = async (event, context) => {
 
         console.log('Order to store:', orderToStore);
 
-        // let postgresAction = await knex('order_history').insert(orderToStore);
-        // console.log('PostgreSQL action:', postgresAction);
+        let postgresAction = await knex('order_history').insert(orderToStore);
+        console.log('PostgreSQL action:', postgresAction);
 
         /////////////////////////////////////
         const scanParams = {
           TableName: TABLE_ORDERS,
           FilterExpression:
-            '(#order_status = :order_accepted OR #order_status = :order_pending) AND #venue_id = :venue_id',
+            '(#order_status = :order_complete OR #order_status = :order_rejected) AND #venue_id = :venue_id',
           ExpressionAttributeNames: {
             '#order_status': 'order_status',
             '#venue_id': 'venue_id'
