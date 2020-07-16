@@ -100,7 +100,7 @@ exports.handler = async (event, context) => {
         });
 
         // const deleteOrder = await ddb.delete(deleteParams).promise();
-
+        console.log('Delete order Key', deleteOrder.params.Key)
         console.log('Delete order success:', deleteOrder);
       } catch (error) {
         console.log('Update Postgres failure:', error);
