@@ -49,25 +49,17 @@ exports.handler = async (event, context) => {
         const order_items_object = JSON.parse(
           record.dynamodb.NewImage.order_items.S
         );
-
         const order_time = new Date(
           parseInt(record.dynamodb.NewImage.order_time.N)
         );
-
-        console.log(order_time);
-
         const order_status = record.dynamodb.NewImage.order_status.S;
-
         const table_number = parseInt(record.dynamodb.NewImage.table_number.S);
-
         const menu = await knex('products').select('*').where({ venue_id });
-
         const lookup = createLookUpObj(menu, 'product_id');
         const item_count = countBasket(order_items_object);
         const order_items = recreateBasket(order_items_object, lookup);
         const total_price = calculateTotal(order_items_object, lookup);
 
-        // test this up on aws..
         const orderToStore = {
           venue_id,
           order_time,
@@ -77,23 +69,23 @@ exports.handler = async (event, context) => {
           total_price,
           item_count
         };
-        console.log('Order to store:', orderToStore);
 
         const knexReturn = await knex('order_history').insert(orderToStore);
-        console.log('knex return:', knexReturn);
 
-        // const deleteParams = {
-        //     TableName:TABLE_ORDERS,
-        //     Key:{
-        // order_id,
-        // order_time
-        // },
-        //     ConditionExpression:"order_id <= :order_id",
-        //     ExpressionAttributeValues: {
-        //         ":order_id": order_id
-        //     }
-        // };
-        // ddb.delete(deleteParams)
+        const deleteParams = {
+            TableName:TABLE_ORDERS,
+            Key:{
+        order_id,
+        order_time
+        },
+            ConditionExpression:"order_id = :order_id",
+            ExpressionAttributeValues: {
+                ":order_id": order_id
+            }
+        };
+       const hope = await ddb.delete(deleteParams)
+       console.log(hope)
+        
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
