@@ -72,8 +72,9 @@ exports.handler = async (event, context) => {
 
         console.log('Order to store:', orderToStore);
 
-        let postgresAction = await knex('order_history').insert(orderToStore);
-        console.log('PostgreSQL action:', postgresAction);
+        // let postgresAction = await knex('order_history').insert(orderToStore);
+        // console.log('PostgreSQL action:', postgresAction);
+
         /////////////////////////////////////
         const scanParams = {
           TableName: TABLE_ORDERS,
