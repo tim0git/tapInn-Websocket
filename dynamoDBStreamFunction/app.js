@@ -45,31 +45,31 @@ exports.handler = async (event, context) => {
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
-        const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
-        const order_items_object = JSON.parse(
-          record.dynamodb.NewImage.order_items.S
-        );
-        const order_time = new Date(
-          parseInt(record.dynamodb.NewImage.order_time.N)
-        );
-        const order_status = record.dynamodb.NewImage.order_status.S;
-        const table_number = record.dynamodb.NewImage.table_number.S;
+        // const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
+        // const order_items_object = JSON.parse(
+        //   record.dynamodb.NewImage.order_items.S
+        // );
+        // const order_time = new Date(
+        //   parseInt(record.dynamodb.NewImage.order_time.N)
+        // );
+        // const order_status = record.dynamodb.NewImage.order_status.S;
+        // const table_number = record.dynamodb.NewImage.table_number.S;
         // const menu = await knex('products').select('*').where({ venue_id });
-        const lookup = createLookUpObj(menu, 'product_id');
-        const item_count = countBasket(order_items_object);
-        const order_items = recreateBasket(order_items_object, lookup);
-        const total_price = calculateTotal(order_items_object, lookup);
+        // const lookup = createLookUpObj(menu, 'product_id');
+        // const item_count = countBasket(order_items_object);
+        // const order_items = recreateBasket(order_items_object, lookup);
+        // const total_price = calculateTotal(order_items_object, lookup);
 
-        const orderToStore = {
-          venue_id,
-          order_time,
-          order_status,
-          table_number,
-          order_items,
-          total_price,
-          item_count
-        };
-        console.log('Order to store:', orderToStore);
+        // const orderToStore = {
+        //   venue_id,
+        //   order_time,
+        //   order_status,
+        //   table_number,
+        //   order_items,
+        //   total_price,
+        //   item_count
+        // };
+        // console.log('Order to store:', orderToStore);
 
         // let postgresAction = await knex('order_history').insert(orderToStore);
         // console.log('PostgreSQL action:', postgresAction);
