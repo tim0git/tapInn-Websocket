@@ -84,9 +84,11 @@ exports.handler = async (event, context) => {
         const deleteParams = {
           TableName: TABLE_ORDERS,
           Key: {
-            order_id: record.dynamodb.NewImage.order_id.S
-            // order_time: record.dynamodb.NewImage.order_time.N
-          }
+            order_id: record.dynamodb.NewImage.order_id.S,
+            order_time: record.dynamodb.NewImage.order_time.N
+          },
+          ReturnValues: 'ALL_OLD',
+          Exists: true
           // ConditionExpression: 'order_id = :order_id',
           // ExpressionAttributeValues: {
           //   ':order_id': record.dynamodb.NewImage.order_id.S
