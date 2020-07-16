@@ -39,6 +39,9 @@ exports.handler = async (event, context) => {
 
   for (const record of event.Records) {
     console.log('Record:', record);
+    console.log('Record Keys:', record.dynamodb.Keys);
+    console.log('Record New Image:', record.dynamodb.NewImage);
+    console.log('Record Old Image:', record.dynamodb.OldImage);
 
     if (
       record.dynamodb.NewImage.order_status.S === 'completed' ||
