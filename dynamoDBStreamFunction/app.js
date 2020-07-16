@@ -49,24 +49,24 @@ exports.handler = async (event, context) => {
     ) {
       try {
         // let fest begins
-        let venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
-        let order_items_object = JSON.parse(
+        const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
+        const order_items_object = JSON.parse(
           record.dynamodb.NewImage.order_items.S
         );
-        let order_time = new Date(
+        const order_time = new Date(
           parseInt(record.dynamodb.NewImage.order_time.N)
         );
-        let order_status = record.dynamodb.NewImage.order_status.S;
-        let table_number = record.dynamodb.NewImage.table_number.S;
-        let menu = await knex('products').select('*').where({ venue_id });
-        let lookup = createLookUpObj(menu, 'product_id');
-        let item_count = countBasket(order_items_object);
-        let order_items = recreateBasket(order_items_object, lookup);
+        const order_status = record.dynamodb.NewImage.order_status.S;
+        const table_number = record.dynamodb.NewImage.table_number.S;
+        const menu = await knex('products').select('*').where({ venue_id });
+        const lookup = createLookUpObj(menu, 'product_id');
+        const item_count = countBasket(order_items_object);
+        const order_items = recreateBasket(order_items_object, lookup);
         console.log('menu', menu);
         console.log('lookup', lookup);
-        let total_price = calculateTotal(order_items_object, lookup);
+        const total_price = calculateTotal(order_items_object, lookup);
 
-        let orderToStore = {
+        const orderToStore = {
           venue_id,
           order_time,
           order_status,
@@ -84,8 +84,8 @@ exports.handler = async (event, context) => {
         const deleteParams = {
           TableName: TABLE_ORDERS,
           Key: {
-            order_id: record.dynamodb.NewImage.order_id.S,
-            order_time: record.dynamodb.NewImage.order_time.N
+            order_id: record.dynamodb.NewImage.order_id,
+            order_time: record.dynamodb.NewImage.order_time
           },
           ConditionExpression: 'order_id = :order_id',
           ExpressionAttributeValues: {
@@ -93,8 +93,16 @@ exports.handler = async (event, context) => {
           }
         };
 
-        await ddb.delete(deleteParams).promise();
-        console.log('Update Postgres success');
+        ddb.delete(params, function (err, data) {
+          if (err) {
+            console.error(
+              'Unable to delete item. Error JSON:',
+              JSON.stringify(err, null, 2)
+            );
+          } else {
+            console.log('DeleteItem succeeded:', JSON.stringify(data, null, 2));
+          }
+        });
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
