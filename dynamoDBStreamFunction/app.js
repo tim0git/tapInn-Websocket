@@ -39,16 +39,12 @@ exports.handler = async (event, context) => {
 
   for (const record of event.Records) {
     console.log('Record:', record);
-    console.log('Record Keys:', record.dynamodb.Keys);
-    console.log('Record New Image:', record.dynamodb.NewImage);
-    console.log('Record Old Image:', record.dynamodb.OldImage);
 
     if (
       record.dynamodb.NewImage.order_status.S === 'completed' ||
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
-        // let fest begins
         const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
         const order_items_object = JSON.parse(
           record.dynamodb.NewImage.order_items.S
@@ -62,8 +58,6 @@ exports.handler = async (event, context) => {
         const lookup = createLookUpObj(menu, 'product_id');
         const item_count = countBasket(order_items_object);
         const order_items = recreateBasket(order_items_object, lookup);
-        console.log('menu', menu);
-        console.log('lookup', lookup);
         const total_price = calculateTotal(order_items_object, lookup);
 
         const orderToStore = {
@@ -80,6 +74,25 @@ exports.handler = async (event, context) => {
 
         let postgresAction = await knex('order_history').insert(orderToStore);
         console.log('PostgreSQL action:', postgresAction);
+        /////////////////////////////////////
+        const scanParams = {
+          TableName: TABLE_ORDERS,
+          FilterExpression:
+            '(#order_status = :order_accepted OR #order_status = :order_pending) AND #venue_id = :venue_id',
+          ExpressionAttributeNames: {
+            '#order_status': 'order_status',
+            '#venue_id': 'venue_id'
+          },
+          ExpressionAttributeValues: {
+            ':order_accepted': 'accepted',
+            ':order_pending': 'pending',
+            ':venue_id': venue_id
+          }
+        };
+        let openOrders;
+
+        openOrders = await ddb.scan(scanParams).promise();
+        console.log('Scan open orders success:', openOrders);
 
         const deleteOrderId = record.dynamodb.NewImage.order_id.S;
         const deleteOrderTime = parseInt(record.dynamodb.NewImage.order_time.N);
@@ -92,13 +105,9 @@ exports.handler = async (event, context) => {
 
         const deleteParams = {
           TableName: TABLE_ORDERS,
-          Key: {
-            order_false: 'none'
-            // order_id: deleteOrderId,
-            // order_time: deleteOrderTime
-          }
-          // ReturnValues: 'ALL_OLD',
-          // Exists: true
+          Key: record.dynamodb.Keys
+          // order_id: deleteOrderId,
+          // order_time: deleteOrderTime
         };
 
         const hope = await ddb.delete(deleteParams).promise();
