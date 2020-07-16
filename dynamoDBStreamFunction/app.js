@@ -81,9 +81,14 @@ exports.handler = async (event, context) => {
         let postgresAction = await knex('order_history').insert(orderToStore);
         console.log('PostgreSQL action:', postgresAction);
 
-        const deleteOrderId = record.dynamodb.NewImage.order_id.S
-        const deleteOrderTime = record.dynamodb.NewImage.order_time.N
-        console.log( typeof deleteOrderId, deleteOrderId, typeof deleteOrderTime, deleteOrderTime)
+        const deleteOrderId = record.dynamodb.NewImage.order_id.S;
+        const deleteOrderTime = parseInt(record.dynamodb.NewImage.order_time.N);
+        console.log(
+          typeof deleteOrderId,
+          deleteOrderId,
+          typeof deleteOrderTime,
+          deleteOrderTime
+        );
 
         const deleteParams = {
           TableName: TABLE_ORDERS,
