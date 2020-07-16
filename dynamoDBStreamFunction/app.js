@@ -93,7 +93,7 @@ exports.handler = async (event, context) => {
           }
         };
 
-        const hope = await ddb.delete(deleteParams).promise();
+        const hope = await ddb.delete(deleteParams, () => {}).promise();
         console.log('Hope:', hope);
 
         const noHope = await ddb.delete(deleteParams);
