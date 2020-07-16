@@ -50,7 +50,11 @@ exports.handler = async (event, context) => {
           record.dynamodb.NewImage.order_items.S
         );
 
-        const order_time = parseInt(record.dynamodb.NewImage.order_time.N);
+        const order_time = new Date(
+          parseInt(record.dynamodb.NewImage.order_time.N)
+        );
+
+        console.log(order_time);
 
         const order_status = record.dynamodb.NewImage.order_status.S;
 
