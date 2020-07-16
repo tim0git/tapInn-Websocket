@@ -69,15 +69,15 @@ exports.handler = async (event, context) => {
         console.log('Menu:', menu);
 
         const lookup = createLookUpObj(menu, 'product_id');
-        console.log('Lookup:', typeof lookup, up'lookup');
-
-        const total_price = calculateTotal(order_items_object, lookup);
-        console.log(total);
+        console.log('Lookup:', typeof lookup, lookup, 'lookup');
 
         const item_count = countBasket(order_items_object);
         console.log(count);
 
         const order_items = recreateBasket(order_items_object, lookup);
+
+        const total_price = calculateTotal(order_items_object, lookup);
+        console.log(total);
 
         const orderToStore = {
           venue_id,
