@@ -37,8 +37,6 @@ exports.handler = async (event, context) => {
   console.log('Event:', event);
   console.log('Context:', context);
 
-  /////////////////////////////////////
-
   for (const record of event.Records) {
     console.log('Record:', record);
 
@@ -48,39 +46,19 @@ exports.handler = async (event, context) => {
     ) {
       try {
         const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
-        const scanParams = {
-          TableName: TABLE_ORDERS,
-          FilterExpression:
-            '(#order_status = :order_complete OR #order_status = :order_rejected) AND #venue_id = :venue_id',
-          ExpressionAttributeNames: {
-            '#order_status': 'order_status',
-            '#venue_id': 'venue_id'
-          },
-          ExpressionAttributeValues: {
-            ':order_accepted': 'accepted',
-            ':order_pending': 'pending',
-            ':venue_id': venue_id
-          }
-        };
-        let openOrders;
-
-        openOrders = await ddb.scan(scanParams).promise();
-        console.log('Scan open orders success:', openOrders);
-
-        // const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
-        // const order_items_object = JSON.parse(
-        //   record.dynamodb.NewImage.order_items.S
-        // );
-        // const order_time = new Date(
-        //   parseInt(record.dynamodb.NewImage.order_time.N)
-        // );
-        // const order_status = record.dynamodb.NewImage.order_status.S;
-        // const table_number = record.dynamodb.NewImage.table_number.S;
-        // const menu = await knex('products').select('*').where({ venue_id });
-        // const lookup = createLookUpObj(menu, 'product_id');
-        // const item_count = countBasket(order_items_object);
-        // const order_items = recreateBasket(order_items_object, lookup);
-        // const total_price = calculateTotal(order_items_object, lookup);
+        const order_items_object = JSON.parse(
+          record.dynamodb.NewImage.order_items.S
+        );
+        const order_time = new Date(
+          parseInt(record.dynamodb.NewImage.order_time.N)
+        );
+        const order_status = record.dynamodb.NewImage.order_status.S;
+        const table_number = record.dynamodb.NewImage.table_number.S;
+        const menu = await knex('products').select('*').where({ venue_id });
+        const lookup = createLookUpObj(menu, 'product_id');
+        const item_count = countBasket(order_items_object);
+        const order_items = recreateBasket(order_items_object, lookup);
+        const total_price = calculateTotal(order_items_object, lookup);
 
         // const orderToStore = {
         //   venue_id,
@@ -96,27 +74,45 @@ exports.handler = async (event, context) => {
         // let postgresAction = await knex('order_history').insert(orderToStore);
         // console.log('PostgreSQL action:', postgresAction);
 
+        // working above
+
         const deleteOrderId = record.dynamodb.NewImage.order_id.S;
 
         const deleteOrderTime = parseInt(record.dynamodb.NewImage.order_time.N);
 
-        console.log(
-          typeof deleteOrderId,
-          deleteOrderId,
-          typeof deleteOrderTime,
-          deleteOrderTime
-        );
+        console.log(AWS_REGION);
 
-        const deleteParams = {
+        const ddb = new AWS.DynamoDB.DocumentClient({
+          apiVersion: '2012-08-10',
+          region: AWS_REGION
+        });
+
+        console.log(ddb);
+        console.log(Object.keys(ddb));
+
+        var params = {
           TableName: TABLE_ORDERS,
-          Key: record.dynamodb.Keys
-          // order_id: deleteOrderId,
-          // order_time: deleteOrderTime
+          Key: {
+            order_id: deleteOrderId,
+            order_time: deleteOrderTime
+          }
         };
 
-        const hope = await ddb.delete(deleteParams).promise();
-
-        console.log('Hope:', hope);
+        await ddb
+          .delete(params, function (err, data) {
+            if (err) {
+              console.error(
+                'Unable to delete table. Error JSON:',
+                JSON.stringify(err, null, 2)
+              );
+            } else {
+              console.log(
+                'Deleted table. Table description JSON:',
+                JSON.stringify(data, null, 2)
+              );
+            }
+          })
+          .promise();
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
