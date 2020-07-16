@@ -48,7 +48,7 @@ exports.handler = async (event, context) => {
         const venue_id = record.dynamodb.NewImage.venue_id.S;
         console.log('venue_id', venue_id);
 
-        const order_items_object = record.dynamodb.NewImage.order_items.S;
+        const order_items_object = JSON.parse(dynamodb.NewImage.order_items.S);
         console.log(
           'order_items_object:',
           typeof order_items_object,
@@ -102,7 +102,7 @@ exports.handler = async (event, context) => {
         //   venue_id: [Object], xx
         //   order_items: [Object] xx
         // },
-  
+
         // const deleteParams = {
         //     TableName:TABLE_ORDERS,
         //     Key:{
