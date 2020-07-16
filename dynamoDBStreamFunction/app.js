@@ -85,7 +85,7 @@ exports.handler = async (event, context) => {
             ':order_id': record.dynamodb.NewImage.order_id.S
           }
         };
-        const hope = await ddb.delete(deleteParams);
+        const hope = await ddb.delete(deleteParams).promise();
         console.log(hope);
       } catch (error) {
         console.log('Update Postgres failure:', error);
