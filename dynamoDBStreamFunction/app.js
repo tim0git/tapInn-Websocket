@@ -46,42 +46,22 @@ exports.handler = async (event, context) => {
     ) {
       try {
         const venue_id = record.dynamodb.NewImage.venue_id.S;
-        console.log('venue_id', venue_id);
-
         const order_items_object = JSON.parse(
           record.dynamodb.NewImage.order_items.S
         );
-        console.log(
-          'order_items_object:',
-          typeof order_items_object,
-          order_items_object
-        );
-        //{"79":3,"80":2}
 
         const order_time = record.dynamodb.NewImage.order_time.N;
-        console.log('order_time:', order_time);
 
         const order_status = record.dynamodb.NewImage.order_status.S;
-        console.log('order_status:', order_status);
 
         const table_number = record.dynamodb.NewImage.table_number.S;
-        console.log('table_number:', table_number);
 
         const menu = await knex('products').select('*').where({ venue_id });
-        console.log('Menu:', menu);
 
         const lookup = createLookUpObj(menu, 'product_id');
-        console.log('Lookup:', typeof lookup);
-        console.log(lookup, 'lookup');
-
         const item_count = countBasket(order_items_object);
-        console.log(item_count, 'item object');
-
         const order_items = recreateBasket(order_items_object, lookup);
-        console.log(order_items);
-
         const total_price = calculateTotal(order_items_object, lookup);
-        console.log(total_price);
 
         // test this up on aws..
         const orderToStore = {
@@ -95,7 +75,8 @@ exports.handler = async (event, context) => {
         };
         console.log('Order to store:', orderToStore);
 
-        // knex('order_history').insert(orderToStore);
+        const knexReturn = await knex('order_history').insert(orderToStore);
+        console.log('knex return:', knexReturn);
         // NewImage: {
         //   order_status: [Object], xx
         //   table_number: [Object],
