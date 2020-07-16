@@ -46,27 +46,27 @@ exports.handler = async (event, context) => {
       record.dynamodb.NewImage.order_status.S === 'completed' ||
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
-      const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
-      const scanParams = {
-        TableName: TABLE_ORDERS,
-        FilterExpression:
-          '(#order_status = :order_complete OR #order_status = :order_rejected) AND #venue_id = :venue_id',
-        ExpressionAttributeNames: {
-          '#order_status': 'order_status',
-          '#venue_id': 'venue_id'
-        },
-        ExpressionAttributeValues: {
-          ':order_accepted': 'accepted',
-          ':order_pending': 'pending',
-          ':venue_id': venue_id
-        }
-      };
-      let openOrders;
-
-      openOrders = await ddb.scan(scanParams).promise();
-      console.log('Scan open orders success:', openOrders);
-
       try {
+        const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
+        const scanParams = {
+          TableName: TABLE_ORDERS,
+          FilterExpression:
+            '(#order_status = :order_complete OR #order_status = :order_rejected) AND #venue_id = :venue_id',
+          ExpressionAttributeNames: {
+            '#order_status': 'order_status',
+            '#venue_id': 'venue_id'
+          },
+          ExpressionAttributeValues: {
+            ':order_accepted': 'accepted',
+            ':order_pending': 'pending',
+            ':venue_id': venue_id
+          }
+        };
+        let openOrders;
+
+        openOrders = await ddb.scan(scanParams).promise();
+        console.log('Scan open orders success:', openOrders);
+
         // const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
         // const order_items_object = JSON.parse(
         //   record.dynamodb.NewImage.order_items.S
