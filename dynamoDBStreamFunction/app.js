@@ -93,7 +93,7 @@ exports.handler = async (event, context) => {
           }
         };
 
-        ddb.delete(params, function (err, data) {
+        ddb.delete(deleteParams, function (err, data) {
           if (err) {
             console.error(
               'Unable to delete item. Error JSON:',
