@@ -17,16 +17,16 @@ const {
   TABLE_ORDERS
 } = process.env;
 
-const knex = require('knex')({
-  client: 'pg',
-  connection: {
-    host: RDS_HOSTNAME,
-    user: RDS_USERNAME,
-    password: RDS_PASSWORD,
-    database: RDS_DB_NAME,
-    port: RDS_PORT
-  }
-});
+// const knex = require('knex')({
+//   client: 'pg',
+//   connection: {
+//     host: RDS_HOSTNAME,
+//     user: RDS_USERNAME,
+//     password: RDS_PASSWORD,
+//     database: RDS_DB_NAME,
+//     port: RDS_PORT
+//   }
+// });
 
 const ddb = new AWS.DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
@@ -54,7 +54,7 @@ exports.handler = async (event, context) => {
         );
         const order_status = record.dynamodb.NewImage.order_status.S;
         const table_number = record.dynamodb.NewImage.table_number.S;
-        const menu = await knex('products').select('*').where({ venue_id });
+        // const menu = await knex('products').select('*').where({ venue_id });
         const lookup = createLookUpObj(menu, 'product_id');
         const item_count = countBasket(order_items_object);
         const order_items = recreateBasket(order_items_object, lookup);
@@ -71,8 +71,8 @@ exports.handler = async (event, context) => {
         };
         console.log('Order to store:', orderToStore);
 
-        let postgresAction = await knex('order_history').insert(orderToStore);
-        console.log('PostgreSQL action:', postgresAction);
+        // let postgresAction = await knex('order_history').insert(orderToStore);
+        // console.log('PostgreSQL action:', postgresAction);
 
         const deleteOrderId = record.dynamodb.NewImage.order_id.S;
         const deleteOrderTime = parseInt(record.dynamodb.NewImage.order_time.N);
@@ -104,7 +104,9 @@ exports.handler = async (event, context) => {
         console.log(typeof deleteOrder);
 
         console.log('Delete order Key', deleteOrder.params.Key);
+
         console.log('Delete order success:', deleteOrder);
+
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
