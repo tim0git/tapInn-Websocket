@@ -82,13 +82,8 @@ exports.handler = async (event, context) => {
 
         console.log(AWS_REGION);
 
-        const ddb = new AWS.DynamoDB.DocumentClient({
-          apiVersion: '2012-08-10',
-          region: AWS_REGION
-        });
-
         console.log(ddb);
-        console.log(Object.keys(ddb));
+        console.log(ddb.service._events);
 
         var params = {
           TableName: TABLE_ORDERS,
@@ -98,21 +93,22 @@ exports.handler = async (event, context) => {
           }
         };
 
-        await ddb
-          .delete(params, function (err, data) {
-            if (err) {
-              console.error(
-                'Unable to delete table. Error JSON:',
-                JSON.stringify(err, null, 2)
-              );
-            } else {
-              console.log(
-                'Deleted table. Table description JSON:',
-                JSON.stringify(data, null, 2)
-              );
-            }
-          })
-          .promise();
+        const unknown = await ddb.delete(params, function (err, data) {
+          if (err) {
+            console.error(
+              'Unable to delete table. Error JSON:',
+              JSON.stringify(err, null, 2)
+            );
+          } else {
+            console.log(
+              'Deleted table. Table description JSON:',
+              JSON.stringify(data, null, 2)
+            );
+          }
+        });
+
+        console.log(unknown);
+        
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
