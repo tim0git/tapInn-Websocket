@@ -16,9 +16,8 @@ const createLookUpObj = (menuArray, key) => {
 const calculateTotal = (basket, lookup) => {
   let total = 0;
   const items = Object.keys(basket);
-  items.map(basketItem => {
-    // eslint-disable-next-line no-return-assign
-    return (total += lookup[basketItem].product_price * basket[basketItem]);
+  items.forEach(basketItem => {
+    total += lookup[basketItem].product_price * basket[basketItem];
   });
   const returnVal = total.toFixed(2);
   return parseFloat(returnVal);
@@ -42,4 +41,12 @@ const recreateBasket = (basket, lookup) => {
   return JSON.stringify(orders);
 };
 
-export { countBasket, calculateTotal, createLookUpObj, recreateBasket };
+module.exports = {
+  countBasket,
+  calculateTotal,
+  createLookUpObj,
+  recreateBasket
+};
+
+// Basket ->  {"69": 2}
+// lookup -> {  '69': { product_price: '3.20', product_name: 'Kirkstall Pale Ale' }}

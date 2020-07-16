@@ -48,8 +48,12 @@ exports.handler = async (event, context) => {
         const venue_id = record.dynamodb.NewImage.venue_id.S;
         console.log('venue_id', venue_id);
 
-        const order_items = record.dynamodb.NewImage.order_items.S;
-        console.log('order_items:', order_items);
+        const order_items_object = record.dynamodb.NewImage.order_items.S;
+        console.log(
+          'order_items_object:',
+          typeof order_items_object,
+          order_items_object
+        );
         //{"79":3,"80":2}
 
         const order_time = record.dynamodb.NewImage.order_time.N;
@@ -65,35 +69,28 @@ exports.handler = async (event, context) => {
         console.log('Menu:', menu);
 
         const lookup = createLookUpObj(menu, 'product_id');
-        console.log(lookup);
+        console.log('Lookup:', typeof lookup, up'lookup');
 
-        const total = calculateTotal(order_items, lookup);
+        const total_price = calculateTotal(order_items_object, lookup);
         console.log(total);
 
-        const count = countBasket(order_items);
+        const item_count = countBasket(order_items_object);
         console.log(count);
 
-        const stringBasket = recreateBasket(order_items, lookup);
-        console.log(stringBasket);
+        const order_items = recreateBasket(order_items_object, lookup);
 
         const orderToStore = {
           venue_id,
           order_time,
-                };
+          order_status,
+          table_number,
+          order_items,
+          total_price,
+          item_count
+        };
+        console.log(orderToStore);
 
-        // connect to SQL Menu and retrieve by venue_id
-
-        // match up order_items with the menu to create an []?
-
-        // **write order to table**
-        // If write is sucessful delete order from Dynamo DB
-        // venue_id xx
-        // order_time xx
-        // order_status xx
-        // order_items xx
-        // order_price
-        // knex('order_history').insert(orders);
-
+        // knex('order_history').insert(orderToStore);
         // NewImage: {
         //   order_status: [Object], xx
         //   table_number: [Object],
@@ -102,9 +99,7 @@ exports.handler = async (event, context) => {
         //   venue_id: [Object], xx
         //   order_items: [Object] xx
         // },
-
         console.log('inside the if statement');
-
         // const deleteParams = {
         //     TableName:TABLE_ORDERS,
         //     Key:{
