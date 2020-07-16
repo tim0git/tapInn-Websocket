@@ -60,40 +60,32 @@ exports.handler = async (event, context) => {
         const order_items = recreateBasket(order_items_object, lookup);
         const total_price = calculateTotal(order_items_object, lookup);
 
-        // const orderToStore = {
-        //   venue_id,
-        //   order_time,
-        //   order_status,
-        //   table_number,
-        //   order_items,
-        //   total_price,
-        //   item_count
-        // };
-        // console.log('Order to store:', orderToStore);
+        const orderToStore = {
+          venue_id,
+          order_time,
+          order_status,
+          table_number,
+          order_items,
+          total_price,
+          item_count
+        };
+        console.log('Order to store:', orderToStore);
 
-        // let postgresAction = await knex('order_history').insert(orderToStore);
-        // console.log('PostgreSQL action:', postgresAction);
-
-        // working above
+        let postgresAction = await knex('order_history').insert(orderToStore);
+        console.log('PostgreSQL action:', postgresAction);
 
         const deleteOrderId = record.dynamodb.NewImage.order_id.S;
+        const deleteOrderTime = record.dynamodb.NewImage.order_time.N;
 
-        const deleteOrderTime = parseInt(record.dynamodb.NewImage.order_time.N);
-
-        console.log(AWS_REGION);
-
-        console.log(ddb);
-        console.log(ddb.service._events);
-
-        var params = {
+        const deleteParams = {
           TableName: TABLE_ORDERS,
           Key: {
-            order_id: deleteOrderId
-            // order_time: deleteOrderTime
+            order_id: deleteOrderId,
+            order_time: deleteOrderTime
           }
         };
 
-        const unknown = await ddb.delete(params, function (err, data) {
+        const deleteOrder = await ddb.delete(deleteParams, (err, data) => {
           if (err) {
             console.error(
               'Unable to delete table. Error JSON:',
@@ -107,7 +99,9 @@ exports.handler = async (event, context) => {
           }
         });
 
-        console.log('request unknown', unknown);
+        c
+
+        console.log('Delete order success:', deleteOrder);
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
