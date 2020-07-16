@@ -73,12 +73,12 @@ exports.handler = async (event, context) => {
         console.log(lookup, 'lookup');
 
         const item_count = countBasket(order_items_object);
-        console.log(count);
+        console.log(item_count);
 
         const order_items = recreateBasket(order_items_object, lookup);
 
         const total_price = calculateTotal(order_items_object, lookup);
-        console.log(total);
+        console.log(total_price);
 
         // test this up on aws..
         const orderToStore = {
