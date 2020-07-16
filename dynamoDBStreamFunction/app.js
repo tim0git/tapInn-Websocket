@@ -100,6 +100,15 @@ exports.handler = async (event, context) => {
         // });
 
         const deleteOrder = await ddb.delete(deleteParams).promise();
+
+        deleteOrder
+          .then(res => {
+            console.log(res);
+          })
+          .catch(err => {
+            console.log(err);
+          });
+          
         console.log('Delete order Key', deleteOrder.params.Key);
         console.log('Delete order success:', deleteOrder);
       } catch (error) {
