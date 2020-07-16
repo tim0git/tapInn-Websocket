@@ -13,7 +13,8 @@ const {
   RDS_PASSWORD,
   RDS_DB_NAME,
   RDS_PORT,
-  AWS_REGION
+  AWS_REGION,
+  TABLE_ORDERS
 } = process.env;
 
 const knex = require('knex')({
@@ -70,22 +71,22 @@ exports.handler = async (event, context) => {
           item_count
         };
 
-        const knexReturn = await knex('order_history').insert(orderToStore);
+        const postgresAction = await knex('order_history').insert(orderToStore);
+        console.log('PostgreSQL action:', postgresAction);
 
         const deleteParams = {
-            TableName:TABLE_ORDERS,
-            Key:{
-        order_id,
-        order_time
-        },
-            ConditionExpression:"order_id = :order_id",
-            ExpressionAttributeValues: {
-                ":order_id": order_id
-            }
+          TableName: TABLE_ORDERS,
+          Key: {
+            order_id,
+            order_time
+          },
+          ConditionExpression: 'order_id = :order_id',
+          ExpressionAttributeValues: {
+            ':order_id': order_id
+          }
         };
-       const hope = await ddb.delete(deleteParams)
-       console.log(hope)
-        
+        const hope = await ddb.delete(deleteParams);
+        console.log(hope);
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
