@@ -8,12 +8,12 @@ const {
 } = require('./Dashboard.utils');
 
 const {
-  TABLE_ORDERS,
   RDS_HOSTNAME,
   RDS_USERNAME,
   RDS_PASSWORD,
   RDS_DB_NAME,
-  RDS_PORT
+  RDS_PORT,
+  AWS_REGION
 } = process.env;
 
 const knex = require('knex')({
@@ -29,7 +29,7 @@ const knex = require('knex')({
 
 const ddb = new AWS.DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
-  region: process.env.AWS_REGION
+  region: AWS_REGION
 });
 
 exports.handler = async (event, context) => {
@@ -48,7 +48,9 @@ exports.handler = async (event, context) => {
         const venue_id = record.dynamodb.NewImage.venue_id.S;
         console.log('venue_id', venue_id);
 
-        const order_items_object = JSON.parse(dynamodb.NewImage.order_items.S);
+        const order_items_object = JSON.parse(
+          record.dynamodb.NewImage.order_items.S
+        );
         console.log(
           'order_items_object:',
           typeof order_items_object,
