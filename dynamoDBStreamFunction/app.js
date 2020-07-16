@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const axios = require('axios');
+
 const {
   createLookUpObj,
   calculateTotal,
@@ -91,16 +91,17 @@ exports.handler = async (event, context) => {
         );
 
         const deleteParams = {
-          TableName: TABLE_ORDERS
-          // Key: {
-          //   order_id: deleteOrderId,
-          //   order_time: deleteOrderTime
-          // },
+          TableName: TABLE_ORDERS,
+          Key: {
+            order_false: 'none'
+            // order_id: deleteOrderId,
+            // order_time: deleteOrderTime
+          }
           // ReturnValues: 'ALL_OLD',
           // Exists: true
         };
 
-        const hope = await ddb.deleteTable(deleteParams).promise();
+        const hope = await ddb.delete(deleteParams).promise();
         console.log('Hope:', hope);
       } catch (error) {
         console.log('Update Postgres failure:', error);
