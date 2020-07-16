@@ -38,6 +38,7 @@ exports.handler = async (event, context) => {
   console.log('Context:', context);
 
   /////////////////////////////////////
+  const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
   const scanParams = {
     TableName: TABLE_ORDERS,
     FilterExpression:
