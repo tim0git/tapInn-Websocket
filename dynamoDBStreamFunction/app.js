@@ -39,16 +39,12 @@ exports.handler = async (event, context) => {
 
   for (const record of event.Records) {
     console.log('Record:', record);
-    console.log('Record Keys:', record.dynamodb.Keys);
-    console.log('Record New Image:', record.dynamodb.NewImage);
-    console.log('Record Old Image:', record.dynamodb.OldImage);
 
     if (
       record.dynamodb.NewImage.order_status.S === 'completed' ||
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
-        // let fest begins
         const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
         const order_items_object = JSON.parse(
           record.dynamodb.NewImage.order_items.S
@@ -62,8 +58,6 @@ exports.handler = async (event, context) => {
         const lookup = createLookUpObj(menu, 'product_id');
         const item_count = countBasket(order_items_object);
         const order_items = recreateBasket(order_items_object, lookup);
-        console.log('menu', menu);
-        console.log('lookup', lookup);
         const total_price = calculateTotal(order_items_object, lookup);
 
         const orderToStore = {
@@ -93,19 +87,25 @@ exports.handler = async (event, context) => {
         const deleteParams = {
           TableName: TABLE_ORDERS,
           Key: {
-            order_false: 'none'
+            record.dynamodb.Keys
             // order_id: deleteOrderId,
             // order_time: deleteOrderTime
           }
-          // ReturnValues: 'ALL_OLD',
-          // Exists: true
         };
 
-        const hope = await ddb.delete(deleteParams).promise();
-        console.log('Hope:', hope);
+        // const hope = await ddb.delete(deleteParams).promise();
+        // console.log('Hope:', hope);
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
+
+      ddb.delete(deleteParams, function(err, data) {
+        if (err) {
+            document.getElementById('textarea').innerHTML = "The conditional delete failed: " + "\n" + JSON.stringify(err, undefined, 2);
+        } else {
+            document.getElementById('textarea').innerHTML = "The conditional delete succeeded: " + "\n" + JSON.stringify(data, undefined, 2);
+        }
+    });
     }
   }
   return `Successfully processed ${event.Records.length} records.`;
