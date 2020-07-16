@@ -93,11 +93,9 @@ exports.handler = async (event, context) => {
           }
         };
 
-        const hope = await ddb.delete(deleteParams, () => {}).promise();
+        const hope = await ddb.delete(deleteParams);
         console.log('Hope:', hope);
-
-        const noHope = await ddb.delete(deleteParams);
-        console.log('noHope:', noHope);
+        
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
