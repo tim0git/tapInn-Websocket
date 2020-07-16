@@ -80,12 +80,12 @@ exports.handler = async (event, context) => {
 
         let postgresAction = await knex('order_history').insert(orderToStore);
         console.log('PostgreSQL action:', postgresAction);
-        // let fet ends
+
         const deleteParams = {
           TableName: TABLE_ORDERS,
           Key: {
-            order_id: record.dynamodb.NewImage.order_id,
-            order_time: record.dynamodb.NewImage.order_time
+            order_id: record.dynamodb.NewImage.order_id.S,
+            order_time: record.dynamodb.NewImage.order_time.N
           },
           ConditionExpression: 'order_id = :order_id',
           ExpressionAttributeValues: {
@@ -93,21 +93,11 @@ exports.handler = async (event, context) => {
           }
         };
 
-        await ddb
-          .delete(deleteParams, function (err, data) {
-            if (err) {
-              console.error(
-                'Unable to delete item. Error JSON:',
-                JSON.stringify(err, null, 2)
-              );
-            } else {
-              console.log(
-                'DeleteItem succeeded:',
-                JSON.stringify(data, null, 2)
-              );
-            }
-          })
-          .promise();
+        const hope = await ddb.delete(deleteParams).promise();
+        console.log('Hope:', hope);
+
+        const noHope = await ddb.delete(deleteParams);
+        console.log('noHope:', noHope);
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
