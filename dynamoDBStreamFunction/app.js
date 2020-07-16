@@ -88,8 +88,8 @@ exports.handler = async (event, context) => {
         var params = {
           TableName: TABLE_ORDERS,
           Key: {
-            order_id: deleteOrderId,
-            order_time: deleteOrderTime
+            order_id: deleteOrderId
+            // order_time: deleteOrderTime
           }
         };
 
@@ -107,8 +107,7 @@ exports.handler = async (event, context) => {
           }
         });
 
-        console.log(unknown);
-        
+        console.log('request unknown', unknown);
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
