@@ -73,9 +73,10 @@ exports.handler = async (event, context) => {
         console.log(lookup, 'lookup');
 
         const item_count = countBasket(order_items_object);
-        console.log(item_count);
+        console.log(item_count, 'item object');
 
         const order_items = recreateBasket(order_items_object, lookup);
+        console.log(order_items);
 
         const total_price = calculateTotal(order_items_object, lookup);
         console.log(total_price);
@@ -90,7 +91,7 @@ exports.handler = async (event, context) => {
           total_price,
           item_count
         };
-        console.log(orderToStore);
+        console.log('Order to store:', orderToStore);
 
         // knex('order_history').insert(orderToStore);
         // NewImage: {
@@ -101,7 +102,7 @@ exports.handler = async (event, context) => {
         //   venue_id: [Object], xx
         //   order_items: [Object] xx
         // },
-        console.log('inside the if statement');
+  
         // const deleteParams = {
         //     TableName:TABLE_ORDERS,
         //     Key:{
