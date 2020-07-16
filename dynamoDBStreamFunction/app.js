@@ -45,16 +45,16 @@ exports.handler = async (event, context) => {
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
-        const venue_id = record.dynamodb.NewImage.venue_id.S;
+        const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
         const order_items_object = JSON.parse(
           record.dynamodb.NewImage.order_items.S
         );
 
-        const order_time = record.dynamodb.NewImage.order_time.N;
+        const order_time = parseInt(record.dynamodb.NewImage.order_time.N);
 
         const order_status = record.dynamodb.NewImage.order_status.S;
 
-        const table_number = record.dynamodb.NewImage.table_number.S;
+        const table_number = parseInt(record.dynamodb.NewImage.table_number.S);
 
         const menu = await knex('products').select('*').where({ venue_id });
 
@@ -77,14 +77,6 @@ exports.handler = async (event, context) => {
 
         const knexReturn = await knex('order_history').insert(orderToStore);
         console.log('knex return:', knexReturn);
-        // NewImage: {
-        //   order_status: [Object], xx
-        //   table_number: [Object],
-        //   order_time: [Object], xx
-        //   order_id: [Object],
-        //   venue_id: [Object], xx
-        //   order_items: [Object] xx
-        // },
 
         // const deleteParams = {
         //     TableName:TABLE_ORDERS,
