@@ -53,11 +53,13 @@ exports.handler = async (event, context) => {
           parseInt(record.dynamodb.NewImage.order_time.N)
         );
         const order_status = record.dynamodb.NewImage.order_status.S;
-        const table_number = parseInt(record.dynamodb.NewImage.table_number.S);
+        const table_number = record.dynamodb.NewImage.table_number.S;
         const menu = await knex('products').select('*').where({ venue_id });
         const lookup = createLookUpObj(menu, 'product_id');
         const item_count = countBasket(order_items_object);
         const order_items = recreateBasket(order_items_object, lookup);
+        console.log('menu', menu);
+        console.log('lookup', lookup);
         const total_price = calculateTotal(order_items_object, lookup);
 
         const orderToStore = {
@@ -70,7 +72,7 @@ exports.handler = async (event, context) => {
           item_count
         };
 
-        console.log('Order to store:', orderToStore)
+        console.log('Order to store:', orderToStore);
 
         const postgresAction = await knex('order_history').insert(orderToStore);
         console.log('PostgreSQL action:', postgresAction);
