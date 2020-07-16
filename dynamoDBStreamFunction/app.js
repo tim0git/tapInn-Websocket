@@ -1,13 +1,6 @@
 const AWS = require('aws-sdk');
 
 const {
-  createLookUpObj,
-  calculateTotal,
-  countBasket,
-  recreateBasket
-} = require('./Dashboard.utils');
-
-const {
   RDS_HOSTNAME,
   RDS_USERNAME,
   RDS_PASSWORD,
@@ -28,6 +21,13 @@ const knex = require('knex')({
   }
 });
 
+const {
+  createLookUpObj,
+  calculateTotal,
+  countBasket,
+  recreateBasket
+} = require('./Dashboard.utils');
+
 const ddb = new AWS.DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
   region: AWS_REGION
@@ -37,6 +37,7 @@ exports.handler = async (event, context) => {
   console.log('Event:', event);
   console.log('Context:', context);
 
+  // eslint-disable-next-line no-restricted-syntax
   for (const record of event.Records) {
     console.log('Record:', record);
 
@@ -45,15 +46,16 @@ exports.handler = async (event, context) => {
       record.dynamodb.NewImage.order_status.S === 'rejected'
     ) {
       try {
-        const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S);
+        const venue_id = parseInt(record.dynamodb.NewImage.venue_id.S, 10);
         const order_items_object = JSON.parse(
           record.dynamodb.NewImage.order_items.S
         );
         const order_time = new Date(
-          parseInt(record.dynamodb.NewImage.order_time.N)
+          parseInt(record.dynamodb.NewImage.order_time.N, 10)
         );
         const order_status = record.dynamodb.NewImage.order_status.S;
         const table_number = record.dynamodb.NewImage.table_number.S;
+        // eslint-disable-next-line no-await-in-loop
         const menu = await knex('products').select('*').where({ venue_id });
         const lookup = createLookUpObj(menu, 'product_id');
         const item_count = countBasket(order_items_object);
@@ -71,11 +73,15 @@ exports.handler = async (event, context) => {
         };
         console.log('Order to store:', orderToStore);
 
-        let postgresAction = await knex('order_history').insert(orderToStore);
+        // eslint-disable-next-line no-await-in-loop
+        const postgresAction = await knex('order_history').insert(orderToStore);
         console.log('PostgreSQL action:', postgresAction);
 
         const deleteOrderId = record.dynamodb.NewImage.order_id.S;
-        const deleteOrderTime = parseInt(record.dynamodb.NewImage.order_time.N);
+        const deleteOrderTime = parseInt(
+          record.dynamodb.NewImage.order_time.N,
+          10
+        );
 
         const deleteParams = {
           TableName: TABLE_ORDERS,
@@ -85,13 +91,9 @@ exports.handler = async (event, context) => {
           }
         };
 
-        const deleteOrder = await ddb.delete(deleteParams).promise();
-
-        console.log(typeof deleteOrder);
-
-        console.log('Delete order Key', deleteOrder.params.Key);
-
-        console.log('Delete order success:', deleteOrder);
+        // eslint-disable-next-line no-await-in-loop
+        await ddb.delete(deleteParams).promise();
+        console.log('Remove order success:', deleteOrderId);
       } catch (error) {
         console.log('Update Postgres failure:', error);
       }
