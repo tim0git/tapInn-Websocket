@@ -91,16 +91,16 @@ exports.handler = async (event, context) => {
         );
 
         const deleteParams = {
-          TableName: TABLE_ORDERS,
-          Key: {
-            order_id: deleteOrderId,
-            order_time: deleteOrderTime
-          },
-          ReturnValues: 'ALL_OLD',
-          Exists: true
+          TableName: TABLE_ORDERS
+          // Key: {
+          //   order_id: deleteOrderId,
+          //   order_time: deleteOrderTime
+          // },
+          // ReturnValues: 'ALL_OLD',
+          // Exists: true
         };
 
-        const hope = await ddb.delete(deleteParams).promise();
+        const hope = await ddb.deleteTable(deleteParams).promise();
         console.log('Hope:', hope);
       } catch (error) {
         console.log('Update Postgres failure:', error);
